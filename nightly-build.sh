@@ -8,9 +8,9 @@ set -e
 # User variables
 DEST="mapnik" # the launchpad account name
 # Build signing info...
-GPGKEY=80B52FF1
-DEBFULLNAME="Robert Coup (Mapnik Nightly Builds)"
-DEBEMAIL="robert+mapniknightly@coup.net.nz"
+GPGKEY=
+DEBFULLNAME="Xavier Barnada"
+DEBEMAIL="xbarnada@gisce.net"
 #GPGKEY=89DBC525
 #DEBFULLNAME="Dane Springmeyer (Mapnik Nightly Builds)"
 #DEBEMAIL="dane.springmeyer@gmail.com"
@@ -21,34 +21,37 @@ DEBEMAIL="robert+mapniknightly@coup.net.nz"
 # branch values are the latest official release from the branch
 declare -A BRANCHES
 BRANCHES["master"]="3.0.0"
-BRANCHES["2.3.x"]="2.3.0"
-BRANCHES["2.2.x"]="2.2.0"
-BRANCHES["2.1.x"]="2.1.1"
-BRANCHES["2.0.x"]="2.0.1"
+#BRANCHES["3.0.11"]="3.0.11"
+#BRANCHES["2.3.x"]="2.3.0"
+#BRANCHES["2.2.x"]="2.2.0"
+#BRANCHES["2.1.x"]="2.1.1"
+#BRANCHES["2.0.x"]="2.0.1"
 
 # PPA names, keys are branches
 declare -A PPAS
 PPAS["master"]="ppa:$DEST/nightly-trunk"
-PPAS["2.3.x"]="ppa:$DEST/nightly-2.3"
-PPAS["2.2.x"]="ppa:$DEST/nightly-2.2"
-PPAS["2.1.x"]="ppa:$DEST/nightly-2.1"
-PPAS["2.0.x"]="ppa:$DEST/nightly-2.0"
+#PPAS["3.0.11"]="ppa:$DEST/nightly-trunk"
+#PPAS["2.3.x"]="ppa:$DEST/nightly-2.3"
+#PPAS["2.2.x"]="ppa:$DEST/nightly-2.2"
+#PPAS["2.1.x"]="ppa:$DEST/nightly-2.1"
+#PPAS["2.0.x"]="ppa:$DEST/nightly-2.0"
 
 # Package names, keys are branches
 declare -A PACKAGES
 PACKAGES["master"]="mapnik"
-PACKAGES["2.3.x"]="mapnik"
-PACKAGES["2.2.x"]="mapnik"
-PACKAGES["2.1.x"]="mapnik"
-PACKAGES["2.0.x"]="mapnik"
+#PACKAGES["2.3.x"]="mapnik"
+#PACKAGES["2.2.x"]="mapnik"
+#PACKAGES["2.1.x"]="mapnik"
+#PACKAGES["2.0.x"]="mapnik"
 
 # Ubuntu Distributions to build (space-separated)
 declare -A DISTS
-DISTS["master"]="trusty utopic saucy precise vivid"
-DISTS["2.3.x"]="trusty saucy precise lucid utopic vivid"
-DISTS["2.2.x"]="trusty saucy precise lucid utopic vivid"
-DISTS["2.1.x"]="trusty saucy precise lucid utopic vivid"
-DISTS["2.0.x"]="trusty saucy precise lucid utopic vivid"
+#sDISTS["master"]="trusty"
+DISTS["master"]="xenial"
+#DISTS["2.3.x"]="trusty saucy precise lucid utopic vivid"
+#DISTS["2.2.x"]="trusty saucy precise lucid utopic vivid"
+#DISTS["2.1.x"]="trusty saucy precise lucid utopic vivid"
+#DISTS["2.0.x"]="trusty saucy precise lucid utopic vivid"
 
 ######### Shouldn't need to edit anything past here #########
 
@@ -123,7 +126,10 @@ for BRANCH in ${BRANCHES_TO_BUILD}; do
     echo -e "\n*** Branch $BRANCH (${PACKAGE})"
 
     pushd git
-    git checkout "$BRANCH"
+    echo "HAI"
+    echo "git checkout $BRANCH"
+    #git checkout "$BRANCH"
+    git checkout v3.0.0
     git merge --ff-only "origin/${BRANCH}"
     git submodule update --init
     REV="$(git log -1 --pretty=format:%h)"
@@ -136,7 +142,7 @@ for BRANCH in ${BRANCHES_TO_BUILD}; do
     echo "placing GIT_REVISION file for launchpad build"
     git rev-list --max-count=1 HEAD > GIT_REVISION
 
-    # Shall we build or not ? 
+    # Shall we build or not ?
     if [ "$REV" == "${REV_PREV}" ]; then
         echo "No need to build!"
         if [ -z "$OPT_FORCE" ]; then
@@ -157,8 +163,10 @@ for BRANCH in ${BRANCHES_TO_BUILD}; do
     SOURCE="${PACKAGE}_${BUILD_VERSION}"
     ORIG_TGZ="${PACKAGE}_${BUILD_VERSION}.orig.tar.gz"
     echo "Building orig.tar.gz ..."
+    pwd
     if [ ! -f "../${BRANCH}/${ORIG_TGZ}" ]; then
         git archive --format=tar "--prefix=${SOURCE}/" "${REV}" | gzip >"../${BRANCH}/${ORIG_TGZ}"
+        #tar  -fcz --exclude-vcs "../${BRANCH}/${ORIG_TGZ}"
     else
         echo "> already exists - skipping ..."
     fi
@@ -185,6 +193,7 @@ for BRANCH in ${BRANCHES_TO_BUILD}; do
 
         # update the changelog
         # urgency=medium gets us up the Launchpad queue a bit...
+        echo "source:$SOURCE"
         cat >$SOURCE/debian/changelog <<EOF
 ${PACKAGE} (${DIST_VERSION}) ${DIST}; urgency=medium
 
@@ -200,22 +209,34 @@ EOF
 
         pushd $SOURCE
         echo "Actual debuild time..."
+        pwd
+
+        if [ ! -f "deps/mapbox/variant" ]; then
+          cd deps/mapbox/
+          rm -rf variant
+          pwd
+          echo "abans de afegir submodule"
+          git clone https://github.com/mapbox/variant.git
+          cd ../../
+        fi
         # build & sign the source package
-        debuild -S -k${GPGKEY}
+        #./configure CUSTOM_CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=0"
+        #debuild -S -k${GPGKEY}
+        CUSTOM_CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" dpkg-buildpackage -rfakeroot -uc -b
 
         # woohoo, success!
         popd
 
         # send to ppa
-        echo "Sending to PPA..."
-        if [ -z "$OPT_DRYRUN" ]; then
-            dput -f "$PPA" "${PACKAGE}_${DIST_VERSION}_source.changes"
+        #echo "Sending to PPA..."
+        #if [ -z "$OPT_DRYRUN" ]; then
+        #    dput -f "$PPA" "${PACKAGE}_${DIST_VERSION}_source.changes"
 
             # save changelog for next time
-            cp $SOURCE/debian/changelog $DIST.changelog
-        else
-            echo "> skipping..."
-        fi
+        #    cp $SOURCE/debian/changelog $DIST.changelog
+        #else
+        #    echo "> skipping..."
+        #fi
     done
 
     # save the revision for next time
@@ -225,5 +246,5 @@ EOF
         echo "$REV" > prev.rev
     fi
     popd
-done
 
+done
