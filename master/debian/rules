@@ -33,7 +33,7 @@ override_dh_auto_test:
 endif
 
 override_dh_auto_configure:
-	./configure $(SCONS_FLAGS) CUSTOM_CXXFLAGS="$(CFLAGS)" || cat config.log
+	./configure $(SCONS_FLAGS) CC="gcc" CXX="g++" CUSTOM_CXXFLAGS="$(CFLAGS)" || cat config.log
 
 override_dh_auto_build:
 	JOBS=2 make
