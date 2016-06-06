@@ -23,7 +23,7 @@ sudo apt-get install debhelper devscripts dput git-core python scons
 
 1) Clone the packaging repo and enter debian dir:
 
-    git clone git://github.com/mapnik/debian.git mapnik-debian
+    git clone --recursive git://github.com/mapnik/debian.git mapnik-debian
     cd mapnik-debian
 
 2) Clone the mapnik git repo from https://github.com/mapnik/mapnik into a git/ dir:
