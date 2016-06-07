@@ -220,9 +220,9 @@ EOF
           cd ../../
         fi
         # build & sign the source package
-        #./configure CUSTOM_CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=0"
+        ./configure CUSTOM_CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" CC="gcc" CXX="g++"
         #debuild -S -k${GPGKEY}
-        CUSTOM_CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" dpkg-buildpackage -rfakeroot -uc -b
+        CC="gcc" CXX="g++" CUSTOM_CFLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" dpkg-buildpackage -rfakeroot -uc -b -d
 
         # woohoo, success!
         popd
