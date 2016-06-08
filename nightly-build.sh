@@ -20,26 +20,26 @@ DEBEMAIL="xbarnada@gisce.net"
 # branch keys here should match the build directory structure (./foo/svn/, ./foo/debian/)
 # branch values are the latest official release from the branch
 declare -A BRANCHES
-BRANCHES["master"]="3.0.0"
+#BRANCHES["master"]="3.0.0"
 #BRANCHES["3.0.11"]="3.0.11"
-#BRANCHES["2.3.x"]="2.3.0"
+BRANCHES["2.3.x"]="2.3.0"
 #BRANCHES["2.2.x"]="2.2.0"
 #BRANCHES["2.1.x"]="2.1.1"
 #BRANCHES["2.0.x"]="2.0.1"
 
 # PPA names, keys are branches
 declare -A PPAS
-PPAS["master"]="ppa:$DEST/nightly-trunk"
+#PPAS["master"]="ppa:$DEST/nightly-trunk"
 #PPAS["3.0.11"]="ppa:$DEST/nightly-trunk"
-#PPAS["2.3.x"]="ppa:$DEST/nightly-2.3"
+PPAS["2.3.x"]="ppa:$DEST/nightly-2.3"
 #PPAS["2.2.x"]="ppa:$DEST/nightly-2.2"
 #PPAS["2.1.x"]="ppa:$DEST/nightly-2.1"
 #PPAS["2.0.x"]="ppa:$DEST/nightly-2.0"
 
 # Package names, keys are branches
 declare -A PACKAGES
-PACKAGES["master"]="mapnik"
-#PACKAGES["2.3.x"]="mapnik"
+#PACKAGES["master"]="mapnik"
+PACKAGES["2.3.x"]="mapnik"
 #PACKAGES["2.2.x"]="mapnik"
 #PACKAGES["2.1.x"]="mapnik"
 #PACKAGES["2.0.x"]="mapnik"
@@ -47,7 +47,8 @@ PACKAGES["master"]="mapnik"
 # Ubuntu Distributions to build (space-separated)
 declare -A DISTS
 #sDISTS["master"]="trusty"
-DISTS["master"]="xenial"
+#DISTS["master"]="xenial"
+DISTS["2.3.x"]="xenial"
 #DISTS["2.3.x"]="trusty saucy precise lucid utopic vivid"
 #DISTS["2.2.x"]="trusty saucy precise lucid utopic vivid"
 #DISTS["2.1.x"]="trusty saucy precise lucid utopic vivid"
@@ -126,10 +127,9 @@ for BRANCH in ${BRANCHES_TO_BUILD}; do
     echo -e "\n*** Branch $BRANCH (${PACKAGE})"
 
     pushd git
-    echo "HAI"
+
     echo "git checkout $BRANCH"
-    #git checkout "$BRANCH"
-    git checkout v3.0.0
+    git checkout "$BRANCH"
     git merge --ff-only "origin/${BRANCH}"
     git submodule update --init
     REV="$(git log -1 --pretty=format:%h)"
@@ -211,14 +211,14 @@ EOF
         echo "Actual debuild time..."
         pwd
 
-        if [ ! -f "deps/mapbox/variant" ]; then
-          cd deps/mapbox/
-          rm -rf variant
-          pwd
-          echo "abans de afegir submodule"
-          git clone https://github.com/mapbox/variant.git
-          cd ../../
-        fi
+        #if [ ! -f "deps/mapbox/variant" ]; then
+          #cd deps/mapbox/
+          #rm -rf variant
+          #pwd
+          #echo "abans de afegir submodule"
+          #git clone https://github.com/mapbox/variant.git
+          #cd ../../
+        #fi
         # build & sign the source package
         ./configure CUSTOM_CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" CC="gcc" CXX="g++"
         #debuild -S -k${GPGKEY}
