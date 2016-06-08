@@ -20,4 +20,4 @@ RUN apt-get install -y scons libtool libicu-dev libfreetype6-dev libcairo-dev li
 RUN apt-get install -y python-distutils-extra python-cairo-dev libtiff5-dev
 RUN apt-get install -y libcairo2-dev libglib2.0-dev python2.7-dev python-zbar python-gi
 RUN apt-get install -y python-gi-cairo gir1.2-gtk-3.0 pdftk python-pypdf python-reportlab
-RUN apt-get install -y python-imaging libboost-python1.58.0-dev
+RUN apt-get install -y python-imaging libboost-python1.58-dev
