@@ -12,6 +12,10 @@ https://github.com/mapnik/mapnik/wiki/UbuntuInstallation
 These scripts currently run on Koordinates' CI server every night at 0000UTC and upload
 to the Mapnik nightly build PPAs at https://launchpad.net/~mapnik
 
+## Build packages using docker
+
+docker build --no-cache -t mapnik_ubuntu - < Dockerfile
+docker -v /tmp:./ -it mapnik_ubuntu "bash -c \"/nightly-build.sh -f\""
 
 ## Requirements
 
@@ -30,7 +34,7 @@ sudo apt-get install debhelper devscripts dput git-core python scons
 
     git clone https://github.com/mapnik/mapnik git
 
-3) Update the nightly-build.sh script with your name/GPG key/etc, and 
+3) Update the nightly-build.sh script with your name/GPG key/etc, and
 what branches/dists/ppas you want. Set the latest releases correctly too.
 
 Note: if you change the launchpad username then you will also need to ensure your PPA has
@@ -57,7 +61,7 @@ the correctly named PPA's:
     git checkout 2.3.x
     git log -1 --pretty=format:%h > ../2.3.x/prev.rev
     cd ../
-    
+
 5) Run `./nightly-build.sh -f -d` to make sure it works (you should see usage)
 
 6) Run `./nightly-build.sh -f` to force the first build & upload
@@ -69,17 +73,17 @@ the correctly named PPA's:
 9) Run `./nightly-build.sh -c` to cleanup occasionally
 
 10) Re-run a single trunk build because you've fixed debian/ stuff, do
-   
+
     ./nightly-build.sh -f -b trunk -r 2
 
 
 ## Notes
 
-`debian/` directories are taken from the appropriate directory for each branch, 
+`debian/` directories are taken from the appropriate directory for each branch,
 except for the changelog which is built dynamically.
 
 
-License: 
+License:
 
 * GPL-2+
 
@@ -87,4 +91,3 @@ Feedback:
 
 * Robert Coup <robert@coup.net.nz>
 * Dane Springmeyer <dane@dbsgeo.com>
-
