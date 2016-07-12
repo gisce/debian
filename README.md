@@ -13,9 +13,10 @@ These scripts currently run on Koordinates' CI server every night at 0000UTC and
 to the Mapnik nightly build PPAs at https://launchpad.net/~mapnik
 
 ## Build packages using docker
-
+```
 docker build --no-cache -t mapnik_ubuntu - < Dockerfile
 docker -v /tmp:./ -it mapnik_ubuntu "bash -c \"/nightly-build.sh -f\""
+```
 
 ## Requirements
 
